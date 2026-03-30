@@ -3,6 +3,8 @@
 Simulazione di una staffetta atletica basata su thread Java.
 Quattro runner si passano il testimone in sequenza: il runner successivo parte quando il precedente raggiunge quota 90.
 
+<img width="694" height="413" alt="ThreadRunners" src="https://github.com/user-attachments/assets/77562951-1a1b-4f27-8061-e134165b2266" />
+
 ---
 
 ## Interfaccia utente
