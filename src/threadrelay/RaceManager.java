@@ -11,53 +11,42 @@ import javax.swing.*;
  */
 
 public class RaceManager {
-
-    private JProgressBar[] bars;
-    private JLabel[] labels;
-
+    
     private Runner[] runners;
+    private RelayForm form; 
 
-    public RaceManager(JProgressBar[] bars, JLabel[] labels) {
-        this.bars = bars;
-        this.labels = labels;
+    public RaceManager(RelayForm form) {
+        this.form = form;
     }
 
     public void startRace(int speed) {
         runners = new Runner[4];
-
         for (int i = 0; i < 4; i++) {
             runners[i] = new Runner(i, speed, this);
         }
-
         for (int i = 0; i < 3; i++) {
             runners[i].setNextRunner(runners[i + 1]);
         }
-
-        runners[0].start(); 
+        runners[0].start();
     }
 
-    public void updateRunner(int id, int value) {
-        SwingUtilities.invokeLater(() -> {
-            bars[id].setValue(value);
-            labels[id].setText("Corridore " + (id + 1) + ": " + value);
-        });
+    public void notificaProgresso(int id, int valore) {
+        form.aggiornaBarra(id, valore);
     }
 
-    public void finishRunner(int id) {
-        SwingUtilities.invokeLater(() -> {
-            labels[id].setText("Corridore " + (id + 1) + ": Fine");
-        });
+    public void notificaFine(int id) {
+        form.segnalaArrivo(id);
     }
 
     public void pauseAll() {
-        for (Runner r : runners) r.pauseRunner();
+        if (runners != null) for (Runner r : runners) if (r != null) r.pauseRunner();
     }
 
     public void resumeAll() {
-        for (Runner r : runners) r.resumeRunner();
+        if (runners != null) for (Runner r : runners) if (r != null) r.resumeRunner();
     }
 
     public void stopAll() {
-        for (Runner r : runners) r.stopRunner();
+        if (runners != null) for (Runner r : runners) if (r != null) r.stopRunner();
     }
 }
