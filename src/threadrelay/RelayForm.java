@@ -4,6 +4,8 @@
  */
 package threadrelay;
 
+import javax.swing.*;
+import java.awt.*;
 /**
  *
  * @author grottelli.gabriele
@@ -11,14 +13,94 @@ package threadrelay;
 public class RelayForm extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RelayForm.class.getName());
-
+    
+    private JProgressBar[] progressBars;
+    private JLabel[] statusLabels;
+    private JButton btnStart, btnPause, btnResume, btnStop;
+    private JComboBox<String> comboSpeed; 
+    private RaceManager raceManager;
+    
     /**
      * Creates new form Relay
      */
     public RelayForm() {
         initComponents();
-    }
+        setTitle("Gara a Staffetta - Selezione Velocità");
+        setSize(500, 450);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
 
+        JPanel centerPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        progressBars = new JProgressBar[4];
+        statusLabels = new JLabel[4];
+
+        for (int i = 0; i < 4; i++) {
+            JPanel runnerPanel = new JPanel(new BorderLayout(5, 5));
+            statusLabels[i] = new JLabel("Corridore " + (i + 1) + ": In attesa...");
+            progressBars[i] = new JProgressBar(0, 100);
+            progressBars[i].setStringPainted(true);
+            runnerPanel.add(statusLabels[i], BorderLayout.NORTH);
+            runnerPanel.add(progressBars[i], BorderLayout.CENTER);
+            centerPanel.add(runnerPanel);
+        }
+
+        JPanel topPanel = new JPanel();
+        topPanel.add(new JLabel("Seleziona Velocità: "));
+        String[] opzioni = {"Lento", "Normale", "Veloce"};
+        comboSpeed = new JComboBox<>(opzioni);
+        comboSpeed.setSelectedIndex(1); 
+        topPanel.add(comboSpeed);
+
+        JPanel controlPanel = new JPanel();
+        btnStart = new JButton("Inizia Gara");
+        btnPause = new JButton("Pausa");
+        btnResume = new JButton("Riprendi");
+        btnStop = new JButton("Stop");
+        controlPanel.add(btnStart);
+        controlPanel.add(btnPause);
+        controlPanel.add(btnResume);
+        controlPanel.add(btnStop);
+
+        raceManager = new RaceManager(progressBars, statusLabels);
+
+        btnStart.addActionListener(e -> {
+            resetUI();
+            
+            int delay;
+            String scelta = (String) comboSpeed.getSelectedItem();
+            switch (scelta) {
+                case "Lento":   delay = 100; break;
+                case "Veloce":  delay = 20;  break;
+                case "Normale": 
+                default:        delay = 50;  break;
+            }
+
+            raceManager.startRace(delay);
+            btnStart.setEnabled(false);
+            comboSpeed.setEnabled(false); 
+        });
+
+        btnPause.addActionListener(e -> raceManager.pauseAll());
+        btnResume.addActionListener(e -> raceManager.resumeAll());
+        btnStop.addActionListener(e -> {
+            raceManager.stopAll();
+            btnStart.setEnabled(true);
+            comboSpeed.setEnabled(true);
+        });
+
+        add(topPanel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(controlPanel, BorderLayout.SOUTH);
+    }
+    
+    private void resetUI() {
+        for (int i = 0; i < 4; i++) {
+            progressBars[i].setValue(0);
+            statusLabels[i].setText("Corridore " + (i + 1) + ": In attesa...");
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
