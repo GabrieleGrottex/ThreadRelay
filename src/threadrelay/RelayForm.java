@@ -37,13 +37,11 @@ public class RelayForm extends javax.swing.JFrame {
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(240, 240, 240));
 
-        // --- TITOLO ---
         JLabel title = new JLabel("GARA A STAFFETTA", SwingConstants.CENTER);
         title.setFont(new Font("Segoe UI", Font.BOLD, 24));
         title.setBorder(new EmptyBorder(10, 0, 10, 0));
         add(title, BorderLayout.NORTH);
 
-        // --- CENTRO: PROGRESS BARS ---
         JPanel centerPanel = new JPanel(new GridLayout(4, 1, 10, 10));
         centerPanel.setOpaque(false);
         centerPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
@@ -68,7 +66,6 @@ public class RelayForm extends javax.swing.JFrame {
         }
         add(centerPanel, BorderLayout.CENTER);
 
-        // --- SUD: CONTROLLI ---
         JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
         southPanel.setBackground(Color.WHITE);
 
@@ -81,7 +78,6 @@ public class RelayForm extends javax.swing.JFrame {
         btnResume = new JButton("RIPRENDI");
         btnStop = new JButton("STOP/RESET");
 
-        // Configurazione iniziale stati (Abilitati/Disabilitati)
         btnStart.setEnabled(true);
         btnPause.setEnabled(false);
         btnResume.setEnabled(false);
@@ -94,8 +90,6 @@ public class RelayForm extends javax.swing.JFrame {
         southPanel.add(btnResume);
         southPanel.add(btnStop);
         add(southPanel, BorderLayout.SOUTH);
-
-        // --- GESTIONE CLICK (LISTENER) ---
         
         btnStart.addActionListener(e -> startRaceAction());
 
@@ -116,12 +110,11 @@ public class RelayForm extends javax.swing.JFrame {
             resetUI();
         });
 
-        // Centra la finestra e rendila visibile
         setLocationRelativeTo(null);
     }
 
     private void startRaceAction() {
-        resetUI(); // Pulisce tutto prima di partire
+        resetUI();
         
         int delay;
         switch (speedMenu.getSelectedIndex()) {
@@ -130,7 +123,6 @@ public class RelayForm extends javax.swing.JFrame {
             default: delay = 60; break;
         }
 
-        // Sblocca i pulsanti di controllo
         btnStart.setEnabled(false);
         speedMenu.setEnabled(false);
         btnPause.setEnabled(true);
@@ -138,8 +130,7 @@ public class RelayForm extends javax.swing.JFrame {
 
         raceManager.startRace(delay);
     }
-
-    // Metodi chiamati dal RaceManager per aggiornare la grafica
+    
     public void aggiornaBarra(int id, int valore) {
         SwingUtilities.invokeLater(() -> {
             progressBars[id].setValue(valore);

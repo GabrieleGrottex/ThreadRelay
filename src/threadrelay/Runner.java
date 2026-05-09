@@ -33,7 +33,7 @@ public class Runner extends Thread {
     public void run() {
         try {
             while (progress < 100 && running) {
-                // Controllo Pausa
+                
                 synchronized (this) {
                     while (paused) wait();
                 }
@@ -41,7 +41,6 @@ public class Runner extends Thread {
                 progress++;
                 manager.updateRunner(id, progress);
 
-                // Passaggio testimone al 90%
                 if (progress == 90 && nextRunner != null) {
                     nextRunner.start();
                 }
@@ -54,7 +53,7 @@ public class Runner extends Thread {
             }
 
         } catch (InterruptedException e) {
-            // Gestisce lo stop forzato
+          
         }
     }
 
