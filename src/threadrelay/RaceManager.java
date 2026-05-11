@@ -12,7 +12,7 @@ package threadrelay;
 public class RaceManager {
     
     private Runner[] runners;
-    private final RelayForm form;
+    private RelayForm form;
 
     public RaceManager(RelayForm form) {
         this.form = form;
