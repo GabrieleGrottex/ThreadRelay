@@ -17,5 +17,4 @@ public class ThreadRelay {
         RelayForm r = new RelayForm();
         r.setVisible(true);
     }
-    
 }

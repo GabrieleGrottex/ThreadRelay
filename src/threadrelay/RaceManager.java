@@ -4,16 +4,14 @@
  */
 package threadrelay;
 
-import javax.swing.*;
 /**
  *
  * @author grottelli.gabriele
  */
 
 public class RaceManager {
-    
     private Runner[] runners;
-    private RelayForm form; 
+    private RelayForm form;
 
     public RaceManager(RelayForm form) {
         this.form = form;
@@ -30,23 +28,29 @@ public class RaceManager {
         runners[0].start();
     }
 
-    public void notificaProgresso(int id, int valore) {
+    public void updateRunner(int id, int valore) {
         form.aggiornaBarra(id, valore);
     }
 
-    public void notificaFine(int id) {
+    public void finishRunner(int id) {
         form.segnalaArrivo(id);
     }
 
     public void pauseAll() {
-        if (runners != null) for (Runner r : runners) if (r != null) r.pauseRunner();
+        if (runners != null) {
+            for (Runner r : runners) if (r != null) r.pauseRunner();
+        }
     }
 
     public void resumeAll() {
-        if (runners != null) for (Runner r : runners) if (r != null) r.resumeRunner();
+        if (runners != null) {
+            for (Runner r : runners) if (r != null) r.resumeRunner();
+        }
     }
 
     public void stopAll() {
-        if (runners != null) for (Runner r : runners) if (r != null) r.stopRunner();
+        if (runners != null) {
+            for (Runner r : runners) if (r != null) r.stopRunner();
+        }
     }
 }

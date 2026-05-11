@@ -6,7 +6,6 @@ package threadrelay;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 /**
  *
@@ -16,165 +15,150 @@ public class RelayForm extends javax.swing.JFrame {
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(RelayForm.class.getName());
     
-    private RaceManager manager;
     private JProgressBar[] progressBars;
+    private JLabel[] statusLabels;
     private JButton btnStart, btnPause, btnResume, btnStop;
     private JComboBox<String> speedMenu;
-    
-    private final Color BG_COLOR = new Color(245, 246, 250);
-    private final Color ACCENT_COLOR = new Color(72, 126, 176);
-    private final Color START_COLOR = new Color(76, 175, 80);
-    private final Color STOP_COLOR = new Color(232, 65, 24);
-    private final Color PAUSE_COLOR = new Color(251, 197, 49);
+    private RaceManager raceManager;
     
     /**
      * Creates new form Relay
      */
-    
     public RelayForm() {
-        manager = new RaceManager(this);
-        initComponentsCustom();
+        initComponents(); 
+        setupGerefica();
+        raceManager = new RaceManager(this);
     }
 
-    private void initComponentsCustom() {
-        setTitle("🏃 Thread Relay Race");
+    private void setupGerefica() {
+        setTitle("🏃 Staffetta Multi-Thread");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        getContentPane().setBackground(BG_COLOR);
-        setLayout(new BorderLayout(20, 20));
+        setSize(600, 500);
+        setLayout(new BorderLayout(10, 10));
+        getContentPane().setBackground(new Color(240, 240, 240));
 
-        JLabel titleLabel = new JLabel("Staffetta Multi-Thread", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        titleLabel.setBorder(new EmptyBorder(20, 0, 10, 0));
-        titleLabel.setForeground(new Color(47, 54, 64));
-        add(titleLabel, BorderLayout.NORTH);
+        JLabel title = new JLabel("GARA A STAFFETTA", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setBorder(new EmptyBorder(10, 0, 10, 0));
+        add(title, BorderLayout.NORTH);
 
-        JPanel mainPanel = new JPanel(new GridLayout(4, 1, 15, 15));
-        mainPanel.setBackground(BG_COLOR);
-        mainPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
-        
+        JPanel centerPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        centerPanel.setOpaque(false);
+        centerPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
+
         progressBars = new JProgressBar[4];
+        statusLabels = new JLabel[4];
+
         for (int i = 0; i < 4; i++) {
-            JPanel runnerRow = new JPanel(new BorderLayout(10, 5));
-            runnerRow.setBackground(BG_COLOR);
+            JPanel runnerPanel = new JPanel(new BorderLayout(5, 2));
+            runnerPanel.setOpaque(false);
             
-            JLabel runnerLabel = new JLabel("Runner " + (i + 1) + " 🏁");
-            runnerLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            statusLabels[i] = new JLabel("Runner " + (i + 1) + ": Pronto");
+            statusLabels[i].setFont(new Font("Segoe UI", Font.PLAIN, 14));
             
             progressBars[i] = new JProgressBar(0, 100);
-            progressBars[i].setPreferredSize(new Dimension(400, 35));
             progressBars[i].setStringPainted(true);
-            progressBars[i].setFont(new Font("Segoe UI", Font.BOLD, 12));
-            progressBars[i].setForeground(ACCENT_COLOR);
-            progressBars[i].setBackground(Color.WHITE);
-            progressBars[i].setBorder(new LineBorder(new Color(220, 221, 225), 1, true));
-
-            runnerRow.add(runnerLabel, BorderLayout.NORTH);
-            runnerRow.add(progressBars[i], BorderLayout.CENTER);
-            mainPanel.add(runnerRow);
+            progressBars[i].setPreferredSize(new Dimension(100, 30));
+            
+            runnerPanel.add(statusLabels[i], BorderLayout.NORTH);
+            runnerPanel.add(progressBars[i], BorderLayout.CENTER);
+            centerPanel.add(runnerPanel);
         }
-        add(mainPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
-        JPanel controlContainer = new JPanel(new BorderLayout());
-        controlContainer.setBackground(BG_COLOR);
-        controlContainer.setBorder(new EmptyBorder(10, 20, 20, 20));
+        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        southPanel.setBackground(Color.WHITE);
 
-        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
-        controlPanel.setBackground(Color.WHITE);
-        controlPanel.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(210, 210, 210), 1, true),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
-
-        String[] speeds = {"🐢 Lento", "🚶 Medio", "⚡ Veloce"};
-        speedMenu = new JComboBox<>(speeds);
+        String[] livelli = {"Tartaruga (Lento)", "Uomo (Normale)", "Fulmine (Veloce)"};
+        speedMenu = new JComboBox<>(livelli);
         speedMenu.setSelectedIndex(1);
-        speedMenu.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
-        btnStart = createStyledButton("Avvia ▶", START_COLOR);
-        btnPause = createStyledButton("Pausa ⏸", PAUSE_COLOR);
-        btnResume = createStyledButton("Riprendi ⏯", ACCENT_COLOR);
-        btnStop = createStyledButton("Stop 🛑", STOP_COLOR);
+        btnStart = new JButton("INIZIA");
+        btnPause = new JButton("PAUSA");
+        btnResume = new JButton("RIPRENDI");
+        btnStop = new JButton("STOP/RESET");
 
+        btnStart.setEnabled(true);
         btnPause.setEnabled(false);
         btnResume.setEnabled(false);
         btnStop.setEnabled(false);
 
-        controlPanel.add(new JLabel("Velocità:"));
-        controlPanel.add(speedMenu);
-        controlPanel.add(btnStart);
-        controlPanel.add(btnPause);
-        controlPanel.add(btnResume);
-        controlPanel.add(btnStop);
+        southPanel.add(new JLabel("Velocità:"));
+        southPanel.add(speedMenu);
+        southPanel.add(btnStart);
+        southPanel.add(btnPause);
+        southPanel.add(btnResume);
+        southPanel.add(btnStop);
+        add(southPanel, BorderLayout.SOUTH);
+        
+        btnStart.addActionListener(e -> startRaceAction());
 
-        controlContainer.add(controlPanel, BorderLayout.CENTER);
-        add(controlContainer, BorderLayout.SOUTH);
+        btnPause.addActionListener(e -> {
+            raceManager.pauseAll();
+            btnPause.setEnabled(false);
+            btnResume.setEnabled(true);
+        });
 
-        btnStart.addActionListener(e -> startRace());
-        btnPause.addActionListener(e -> { manager.pauseAll(); btnPause.setEnabled(false); btnResume.setEnabled(true); });
-        btnResume.addActionListener(e -> { manager.resumeAll(); btnPause.setEnabled(true); btnResume.setEnabled(false); });
-        btnStop.addActionListener(e -> { manager.stopAll(); resetUI(); });
+        btnResume.addActionListener(e -> {
+            raceManager.resumeAll();
+            btnPause.setEnabled(true);
+            btnResume.setEnabled(false);
+        });
 
-        pack();
+        btnStop.addActionListener(e -> {
+            raceManager.stopAll();
+            resetUI();
+        });
+
         setLocationRelativeTo(null);
     }
 
-    private JButton createStyledButton(String text, Color color) {
-        JButton btn = new JButton(text);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        btn.setBackground(color);
-        btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.setBorder(new EmptyBorder(8, 15, 8, 15));
-        return btn;
-    }
-
-    private void startRace() {
-        for (JProgressBar b : progressBars) {
-            b.setValue(0);
-            b.setString("Pronto");
-        }
+    private void startRaceAction() {
+        resetUI();
         
-        int speed = switch (speedMenu.getSelectedIndex()) {
-            case 0 -> 100;
-            case 2 -> 20;
-            default -> 50;
-        };
+        int delay;
+        switch (speedMenu.getSelectedIndex()) {
+            case 0: delay = 150; break;
+            case 2: delay = 20; break;
+            default: delay = 60; break;
+        }
 
         btnStart.setEnabled(false);
         speedMenu.setEnabled(false);
         btnPause.setEnabled(true);
         btnStop.setEnabled(true);
 
-        manager.startRace(speed);
+        raceManager.startRace(delay);
     }
-
+    
     public void aggiornaBarra(int id, int valore) {
         SwingUtilities.invokeLater(() -> {
             progressBars[id].setValue(valore);
-            progressBars[id].setString("Correndo... " + valore + "%");
+            statusLabels[id].setText("Runner " + (id + 1) + ": " + valore + "%");
         });
     }
 
     public void segnalaArrivo(int id) {
         SwingUtilities.invokeLater(() -> {
-            progressBars[id].setString("ARRIVATO!");
-            progressBars[id].setForeground(START_COLOR);
+            statusLabels[id].setText("Runner " + (id + 1) + ": TRAGUARDO! 🏁");
             if (id == 3) {
+                JOptionPane.showMessageDialog(this, "Gara terminata con successo!");
                 resetUI();
-                JOptionPane.showMessageDialog(this, "Gara completata con successo!", "Fine Gara", JOptionPane.INFORMATION_MESSAGE);
             }
         });
     }
 
-    private void resetUI() {
+    public void resetUI() {
         SwingUtilities.invokeLater(() -> {
             btnStart.setEnabled(true);
             speedMenu.setEnabled(true);
             btnPause.setEnabled(false);
             btnResume.setEnabled(false);
             btnStop.setEnabled(false);
-            for(JProgressBar b : progressBars) b.setForeground(ACCENT_COLOR);
+            for (int i = 0; i < 4; i++) {
+                progressBars[i].setValue(0);
+                statusLabels[i].setText("Runner " + (i + 1) + ": Pronto");
+            }
         });
     }
     /**
