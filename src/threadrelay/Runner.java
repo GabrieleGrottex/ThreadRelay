@@ -10,12 +10,12 @@ package threadrelay;
  */
 
 public class Runner extends Thread {
+    
     private int id;
     private int progress = 0;
     private boolean running = true;
     private boolean paused = false;
     private int speed;
-
     private Runner nextRunner;
     private RaceManager manager;
 
@@ -33,7 +33,6 @@ public class Runner extends Thread {
     public void run() {
         try {
             while (progress < 100 && running) {
-                
                 synchronized (this) {
                     while (paused) wait();
                 }
@@ -47,27 +46,21 @@ public class Runner extends Thread {
 
                 Thread.sleep(speed);
             }
-            
             if (running && progress >= 100) {
                 manager.finishRunner(id);
             }
-
         } catch (InterruptedException e) {
-          
+           
         }
     }
 
-    public synchronized void pauseRunner() {
-        paused = true;
-    }
-
+    public synchronized void pauseRunner() { paused = true; }
     public synchronized void resumeRunner() {
         paused = false;
         notify();
     }
-
     public void stopRunner() {
         running = false;
-        this.interrupt(); 
+        this.interrupt();
     }
 }

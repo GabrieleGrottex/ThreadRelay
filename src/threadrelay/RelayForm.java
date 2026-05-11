@@ -20,79 +20,68 @@ public class RelayForm extends javax.swing.JFrame {
     private JButton btnStart, btnPause, btnResume, btnStop;
     private JComboBox<String> speedMenu;
     private RaceManager raceManager;
-    
-    /**
-     * Creates new form Relay
-     */
+    private int finishedCount = 0;
+
     public RelayForm() {
-        initComponents(); 
-        setupGerefica();
         raceManager = new RaceManager(this);
+        setupUI();
     }
 
-    private void setupGerefica() {
+    private void setupUI() {
         setTitle("🏃 Staffetta Multi-Thread");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setSize(800, 450);
         setLayout(new BorderLayout(10, 10));
-        getContentPane().setBackground(new Color(240, 240, 240));
 
-        JLabel title = new JLabel("GARA A STAFFETTA", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        title.setBorder(new EmptyBorder(10, 0, 10, 0));
-        add(title, BorderLayout.NORTH);
-
-        JPanel centerPanel = new JPanel(new GridLayout(4, 1, 10, 10));
-        centerPanel.setOpaque(false);
-        centerPanel.setBorder(new EmptyBorder(10, 30, 10, 30));
+        // Pannello Centrale: Corsie e Info
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel tracks = new JPanel(new GridLayout(4, 1, 10, 10));
+        JPanel info = new JPanel(new GridLayout(4, 1, 10, 10));
+        
+        tracks.setBorder(new EmptyBorder(20, 20, 20, 20));
+        info.setBorder(new EmptyBorder(20, 10, 20, 20));
+        info.setPreferredSize(new Dimension(250, 0));
 
         progressBars = new JProgressBar[4];
         statusLabels = new JLabel[4];
 
         for (int i = 0; i < 4; i++) {
-            JPanel runnerPanel = new JPanel(new BorderLayout(5, 2));
-            runnerPanel.setOpaque(false);
-            
-            statusLabels[i] = new JLabel("Runner " + (i + 1) + ": Pronto");
-            statusLabels[i].setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            
             progressBars[i] = new JProgressBar(0, 100);
-            progressBars[i].setStringPainted(true);
-            progressBars[i].setPreferredSize(new Dimension(100, 30));
-            
-            runnerPanel.add(statusLabels[i], BorderLayout.NORTH);
-            runnerPanel.add(progressBars[i], BorderLayout.CENTER);
-            centerPanel.add(runnerPanel);
+            tracks.add(progressBars[i]);
+
+            statusLabels[i] = new JLabel("Corridore " + (i + 1) + ": Pronto");
+            statusLabels[i].setFont(new Font("SansSerif", Font.BOLD, 14));
+            info.add(statusLabels[i]);
         }
-        add(centerPanel, BorderLayout.CENTER);
 
-        JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
-        southPanel.setBackground(Color.WHITE);
+        mainPanel.add(tracks, BorderLayout.CENTER);
+        mainPanel.add(info, BorderLayout.EAST);
+        add(mainPanel, BorderLayout.CENTER);
 
-        String[] livelli = {"Tartaruga (Lento)", "Uomo (Normale)", "Fulmine (Veloce)"};
-        speedMenu = new JComboBox<>(livelli);
+        // Barra Comandi
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
+        speedMenu = new JComboBox<>(new String[]{"Slow", "Regular", "Fast"});
         speedMenu.setSelectedIndex(1);
 
-        btnStart = new JButton("INIZIA");
-        btnPause = new JButton("PAUSA");
-        btnResume = new JButton("RIPRENDI");
-        btnStop = new JButton("STOP/RESET");
+        btnStart = new JButton("Avvia");
+        btnPause = new JButton("Sospende");
+        btnResume = new JButton("Riprende");
+        btnStop = new JButton("Ferma");
 
-        btnStart.setEnabled(true);
-        btnPause.setEnabled(false);
-        btnResume.setEnabled(false);
-        btnStop.setEnabled(false);
+        // Stato iniziale bottoni
+        setButtonsState(true); 
 
-        southPanel.add(new JLabel("Velocità:"));
-        southPanel.add(speedMenu);
-        southPanel.add(btnStart);
-        southPanel.add(btnPause);
-        southPanel.add(btnResume);
-        southPanel.add(btnStop);
-        add(southPanel, BorderLayout.SOUTH);
+        controls.add(new JLabel("Velocità:"));
+        controls.add(speedMenu);
+        controls.add(btnStart);
+        controls.add(btnPause);
+        controls.add(btnResume);
+        controls.add(btnStop);
+        add(controls, BorderLayout.SOUTH);
+
+        // AZIONI BOTTONI
+        btnStart.addActionListener(e -> startAction());
         
-        btnStart.addActionListener(e -> startRaceAction());
-
         btnPause.addActionListener(e -> {
             raceManager.pauseAll();
             btnPause.setEnabled(false);
@@ -113,54 +102,57 @@ public class RelayForm extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void startRaceAction() {
-        resetUI();
+    private void setButtonsState(boolean isReady) {
+        btnStart.setEnabled(isReady);
+        speedMenu.setEnabled(isReady);
         
-        int delay;
-        switch (speedMenu.getSelectedIndex()) {
-            case 0: delay = 150; break;
-            case 2: delay = 20; break;
-            default: delay = 60; break;
+        // Se isReady è true, la gara è ferma, quindi i tasti di controllo sono spenti
+        btnPause.setEnabled(!isReady);
+        btnResume.setEnabled(false); // Sempre spento all'inizio
+        btnStop.setEnabled(!isReady);
+    }
+
+    private void startAction() {
+        finishedCount = 0;
+        for(int i=0; i<4; i++) {
+            progressBars[i].setValue(0);
+            statusLabels[i].setText("Corridore " + (i+1) + ": In corsa...");
         }
 
-        btnStart.setEnabled(false);
-        speedMenu.setEnabled(false);
-        btnPause.setEnabled(true);
-        btnStop.setEnabled(true);
+        int delay = switch (speedMenu.getSelectedIndex()) {
+            case 0 -> 120;
+            case 2 -> 20;
+            default -> 60;
+        };
 
+        // ABILITA I BOTTONI DI CONTROLLO IMMEDIATAMENTE
+        setButtonsState(false); 
+        
         raceManager.startRace(delay);
     }
-    
+
     public void aggiornaBarra(int id, int valore) {
         SwingUtilities.invokeLater(() -> {
             progressBars[id].setValue(valore);
-            statusLabels[id].setText("Runner " + (id + 1) + ": " + valore + "%");
+            statusLabels[id].setText("Corridore " + (id + 1) + ": " + valore + "%");
         });
     }
 
     public void segnalaArrivo(int id) {
         SwingUtilities.invokeLater(() -> {
-            statusLabels[id].setText("Runner " + (id + 1) + ": TRAGUARDO! 🏁");
-            if (id == 3) {
-                JOptionPane.showMessageDialog(this, "Gara terminata con successo!");
+            statusLabels[id].setText("Corridore " + (id + 1) + ": Fine");
+            finishedCount++;
+            if (finishedCount == 4) {
+                JOptionPane.showMessageDialog(this, "Gara terminata!");
                 resetUI();
             }
         });
     }
 
     public void resetUI() {
-        SwingUtilities.invokeLater(() -> {
-            btnStart.setEnabled(true);
-            speedMenu.setEnabled(true);
-            btnPause.setEnabled(false);
-            btnResume.setEnabled(false);
-            btnStop.setEnabled(false);
-            for (int i = 0; i < 4; i++) {
-                progressBars[i].setValue(0);
-                statusLabels[i].setText("Runner " + (i + 1) + ": Pronto");
-            }
-        });
+        SwingUtilities.invokeLater(() -> setButtonsState(true));
     }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

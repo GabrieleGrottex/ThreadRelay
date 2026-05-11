@@ -10,8 +10,9 @@ package threadrelay;
  */
 
 public class RaceManager {
+    
     private Runner[] runners;
-    private RelayForm form;
+    private final RelayForm form;
 
     public RaceManager(RelayForm form) {
         this.form = form;
@@ -25,7 +26,7 @@ public class RaceManager {
         for (int i = 0; i < 3; i++) {
             runners[i].setNextRunner(runners[i + 1]);
         }
-        runners[0].start();
+        runners[0].start(); // Parte solo il primo
     }
 
     public void updateRunner(int id, int valore) {
@@ -38,13 +39,13 @@ public class RaceManager {
 
     public void pauseAll() {
         if (runners != null) {
-            for (Runner r : runners) if (r != null) r.pauseRunner();
+            for (Runner r : runners) if (r != null && r.isAlive()) r.pauseRunner();
         }
     }
 
     public void resumeAll() {
         if (runners != null) {
-            for (Runner r : runners) if (r != null) r.resumeRunner();
+            for (Runner r : runners) if (r != null && r.isAlive()) r.resumeRunner();
         }
     }
 
